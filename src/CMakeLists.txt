@@ -9,7 +9,9 @@ find_package(
         Svg
         DBus
         LinguistTools)
-
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+find_package(Tesseract REQUIRED)
+find_package(Leptonica REQUIRED)
 if (USE_WAYLAND_CLIPBOARD)
     find_package(KF5GuiAddons)
 endif()
@@ -204,6 +206,8 @@ else ()
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../external/singleapplication>)
 endif()
+include_directories(${Tesseract_INCLUDE_DIRS})
+include_directories(${Leptonica_INCLUDE_DIRS})
 
 target_link_libraries(
         flameshot
@@ -215,7 +219,8 @@ target_link_libraries(
         Qt5::Widgets
         ${QTSINGLEAPPLICATION_LIBRARY}
         QtColorWidgets
-
+        ${Tesseract_LIBRARIES}
+        ${Leptonica_LIBRARIES}
 )
 
 if (USE_WAYLAND_CLIPBOARD)
