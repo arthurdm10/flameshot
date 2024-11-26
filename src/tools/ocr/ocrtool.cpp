@@ -38,7 +38,7 @@ CaptureTool::Type OcrTool::type() const
 
 QString OcrTool::description() const
 {
-    return tr("Set OCR as current tool");
+    return tr("Copy text to clipboard");
 }
 
 CaptureTool* OcrTool::copy(QObject* parent)
@@ -57,7 +57,6 @@ void OcrTool::process(QPainter& painter, const QPixmap& pixmap)
 void OcrTool::pressed(CaptureContext& context)
 {
     tesseract::TessBaseAPI* api = new tesseract::TessBaseAPI();
-
     // Initialize with English language (eng)
     if (api->Init(NULL, "eng")) {
         AbstractLogger::error() << "Could not initialize tesseract.";
@@ -69,6 +68,7 @@ void OcrTool::pressed(CaptureContext& context)
     pix->data = (l_uint32*)scImg.bits();
 
     api->SetImage(pix);
+    api->SetSourceResolution(90);
     
     const char* detectedText = api->GetUTF8Text();
 
