@@ -4,7 +4,7 @@ find_path(Leptonica_INCLUDE_DIR
 )
 
 find_library(Leptonica_LIBRARY
-  NAMES lept
+  NAMES lept leptonica
   PATHS /usr/lib /usr/local/lib
 )
 
