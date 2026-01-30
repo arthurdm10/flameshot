@@ -26,18 +26,25 @@ TrayIcon::TrayIcon(QObject* parent)
     // https://bugreports.qt.io/browse/QTBUG-86393
     // https://developer.apple.com/forums/thread/126072
     auto currentMacOsVersion = QOperatingSystemVersion::current();
-    if (currentMacOsVersion >= currentMacOsVersion.MacOSBigSur) {
+    if (currentMacOsVersion >= QOperatingSystemVersion::MacOSBigSur) {
         setContextMenu(m_menu);
     }
 #else
     setContextMenu(m_menu);
 #endif
     QIcon icon =
-      QIcon::fromTheme("flameshot-tray", QIcon(GlobalValues::iconPathPNG()));
+      QIcon::fromTheme("flameshot-tray", QIcon(GlobalValues::trayIconPath()));
+
+#if defined(Q_OS_MACOS)
+    if (currentMacOsVersion >= QOperatingSystemVersion::MacOSBigSur) {
+        icon.setIsMask(true);
+    }
+#endif
+
     setIcon(icon);
 
 #if defined(Q_OS_MACOS)
-    if (currentMacOsVersion < currentMacOsVersion.MacOSBigSur) {
+    if (currentMacOsVersion < QOperatingSystemVersion::MacOSBigSur) {
         // Because of the following issues on MacOS "Catalina":
         // https://bugreports.qt.io/browse/QTBUG-86393
         // https://developer.apple.com/forums/thread/126072
@@ -78,7 +85,7 @@ TrayIcon::TrayIcon(QObject* parent)
     connect(ConfigHandler::getInstance(),
             &ConfigHandler::fileChanged,
             this,
-            [this]() {});
+            [this]() { updateCaptureActionShortcut(); });
 }
 
 TrayIcon::~TrayIcon()
@@ -97,11 +104,14 @@ void TrayIcon::initMenu()
 {
     m_menu = new QMenu();
 
-    auto* captureAction = new QAction(tr("&Take Screenshot"), this);
-    connect(captureAction, &QAction::triggered, this, [this]() {
+    m_captureAction = new QAction(tr("&Take Screenshot"), this);
+
+    updateCaptureActionShortcut();
+
+    connect(m_captureAction, &QAction::triggered, this, [this]() {
 #if defined(Q_OS_MACOS)
         auto currentMacOsVersion = QOperatingSystemVersion::current();
-        if (currentMacOsVersion >= currentMacOsVersion.MacOSBigSur) {
+        if (currentMacOsVersion >= QOperatingSystemVersion::MacOSBigSur) {
             startGuiCapture();
         } else {
             // It seems it is not relevant for MacOS BigSur (Wait 400 ms to hide
@@ -125,9 +135,11 @@ void TrayIcon::initMenu()
             &QAction::triggered,
             Flameshot::instance(),
             &Flameshot::config);
-    auto* infoAction = new QAction(tr("&About"), this);
-    connect(
-      infoAction, &QAction::triggered, Flameshot::instance(), &Flameshot::info);
+    m_infoAction = new QAction(tr("&About"), this);
+    connect(m_infoAction,
+            &QAction::triggered,
+            Flameshot::instance(),
+            &Flameshot::info);
 
 #if !defined(DISABLE_UPDATE_CHECKER)
     m_appUpdates = new QAction(tr("Check for updates"), this);
@@ -140,32 +152,45 @@ void TrayIcon::initMenu()
             &FlameshotDaemon::newVersionAvailable,
             this,
             [this](const QVersionNumber& version) {
-                QString newVersion =
-                  tr("New version %1 is available").arg(version.toString());
-                m_appUpdates->setText(newVersion);
+                if (ConfigHandler().checkForUpdates()) {
+                    QString newVersion =
+                      tr("Download version %1").arg(version.toString());
+                    m_appUpdates->setText(newVersion);
+                    m_appUpdates->setVisible(true);
+
+                    // hack to work around menu not updating when the text /
+                    // visibility is modified Force menu refresh by removing and
+                    // re-adding the action
+                    m_menu->removeAction(m_appUpdates);
+                    m_menu->insertAction(m_infoAction, m_appUpdates);
+                }
             });
+    updateCheckUpdatesMenuVisibility();
 #endif
 
     QAction* quitAction = new QAction(tr("&Quit"), this);
     connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
 
+#ifdef ENABLE_IMGUR
     // recent screenshots
     QAction* recentAction = new QAction(tr("&Latest Uploads"), this);
     connect(recentAction,
             &QAction::triggered,
             Flameshot::instance(),
             &Flameshot::history);
-
+#endif
     auto* openSavePathAction = new QAction(tr("&Open Save Path"), this);
     connect(openSavePathAction,
             &QAction::triggered,
             Flameshot::instance(),
             &Flameshot::openSavePath);
 
-    m_menu->addAction(captureAction);
+    m_menu->addAction(m_captureAction);
     m_menu->addAction(launcherAction);
     m_menu->addSeparator();
+#ifdef ENABLE_IMGUR
     m_menu->addAction(recentAction);
+#endif
     m_menu->addAction(openSavePathAction);
     m_menu->addSeparator();
     m_menu->addAction(configAction);
@@ -173,20 +198,38 @@ void TrayIcon::initMenu()
 #if !defined(DISABLE_UPDATE_CHECKER)
     m_menu->addAction(m_appUpdates);
 #endif
-    m_menu->addAction(infoAction);
+    m_menu->addAction(m_infoAction);
     m_menu->addSeparator();
     m_menu->addAction(quitAction);
 }
 
-#if !defined(DISABLE_UPDATE_CHECKER)
-void TrayIcon::enableCheckUpdatesAction(bool enable)
+void TrayIcon::updateCaptureActionShortcut()
 {
-    if (m_appUpdates != nullptr) {
-        m_appUpdates->setVisible(enable);
-        m_appUpdates->setEnabled(enable);
+#if defined(Q_OS_MACOS)
+    if (!m_captureAction) {
+        return;
     }
-    if (enable) {
-        FlameshotDaemon::instance()->getLatestAvailableVersion();
+
+    QString shortcut = ConfigHandler().shortcut("TAKE_SCREENSHOT");
+    m_captureAction->setShortcut(QKeySequence(shortcut));
+#endif
+}
+
+#if !defined(DISABLE_UPDATE_CHECKER)
+void TrayIcon::updateCheckUpdatesMenuVisibility()
+{
+    if (m_appUpdates == nullptr) {
+        return;
+    }
+
+    bool autoCheckEnabled = ConfigHandler().checkForUpdates();
+    if (autoCheckEnabled) {
+        // When auto-check is enabled, hide the menu item initially
+        // It will be shown when a new version is available via a callback
+        m_appUpdates->setVisible(false);
+    } else {
+        m_appUpdates->setVisible(true);
+        m_appUpdates->setText(tr("Check for updates"));
     }
 }
 #endif

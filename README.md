@@ -42,7 +42,7 @@
       <img alt="Get it from the Snap Store" src="https://snapcraft.io/static/images/badges/en/snap-store-black.svg" />
     </a>
     <a href="https://flathub.org/apps/details/org.flameshot.Flameshot">
-      <img height="60" alt="Download on Flathub" src="https://flathub.org/assets/badges/flathub-badge-en.svg"/>
+      <img height="60" alt="Get it on Flathub" src="https://flathub.org/api/badge?locale=en"/>
     </a>
   </p>
 </div>
@@ -63,8 +63,9 @@
   - [Local](#local)
   - [Global](#global)
     - [On KDE Plasma desktop](#on-kde-plasma-desktop)
-    - [On Ubuntu](#on-ubuntu-tested-on-1804-2004-2204)
+    - [On Gnome (Ubuntu, Fedora and more)](#on-gnome-ubuntu-fedora-and-more)
     - [On XFCE 4](#on-xfce-4)
+    - [On Fluxbox](#on-fluxbox)
 - [Considerations](#considerations)
 - [Installation](#installation)
   - [Prebuilt Packages](#prebuilt-packages)
@@ -152,6 +153,14 @@ A systray icon will be in your system's panel while Flameshot is running.
 Do a right click on the tray icon and you'll see some menu items to open the configuration window and the information window.
 Check out the About window to see all available shortcuts in the graphical capture mode.
 
+### Usage on Windows
+
+On Windows, `flameshot.exe` will behave as expected for all supported command-line arguments, 
+but it will not output any text to the console. This is problematic if, for example, you are 
+running `flameshot.exe -h`.
+
+If you require console output, run `flameshot-cli.exe` instead. `flameshot-cli.exe` is a minimal wrapper around `flameshot.exe` that ensures all stdout is captured and output to the console.
+
 ### CLI configuration
 
 You can use the graphical menu to configure Flameshot, but alternatively you can use your terminal or scripts to do so.
@@ -213,8 +222,10 @@ These shortcuts are available in GUI mode:
 | <kbd>Ctrl</kbd> + <kbd>Q</kbd>                                            | Leave the capture screen                                         |
 | <kbd>Ctrl</kbd> + <kbd>O</kbd>                                            | Choose an app to open the capture                                |
 | <kbd>Ctrl</kbd> + <kbd>Return</kbd>                                            | Commit text in text area|
+| <kbd>Ctrl</kbd> + <kbd>Backspace</kbd>                                    | Cancel current selection                                       | 
 | <kbd>Return</kbd>                                             | Upload the selection to Imgur                                      |
 | <kbd>Spacebar</kbd>                                                       | Toggle visibility of sidebar with options of the selected tool, color picker for the drawing color and history menu |
+| <kbd>G</kbd>                                                       | Starts the color picker |
 | Right Click                                                               | Show the color wheel                                              |
 | Mouse Wheel                                                               | Change the tool's thickness                                    |
 | <kbd>Print screen</kbd>                                          | Capture Screen |
@@ -270,28 +281,19 @@ Steps for using the configuration:
     ln -s /var/lib/flatpak/exports/bin/org.flameshot.Flameshot ~/.local/bin/flameshot
     ```
 
-#### On Ubuntu (Tested on 18.04, 20.04, 22.04)
+#### On Gnome (Ubuntu, Fedora and more)
 
-To use Flameshot instead of the default screenshot application in Ubuntu we need to remove the binding on <kbd>Prt Sc</kbd> key, and then create a new binding for `/usr/bin/flameshot gui` ([adapted](https://askubuntu.com/posts/1039949/revisions) from [Pavel's answer on AskUbuntu](https://askubuntu.com/revisions/1036473/1)).
+To use Flameshot instead of the default screenshot application in Gnome we need to remove the binding on <kbd>Prt Sc</kbd> key, and then create a new binding for `flameshot gui` ([adapted](https://askubuntu.com/posts/1039949/revisions) from [Pavel's answer on AskUbuntu](https://askubuntu.com/revisions/1036473/1)).
 
 1. Remove the binding on <kbd>Prt Sc</kbd>:
-
-   Ubuntu 18.04/20.04 using the following command:
-    ```shell
-    gsettings set org.gnome.settings-daemon.plugins.media-keys screenshot '[]'
-    ```
-
-   Ubuntu 22.04: Go to _Settings_ > _Keyboard_ > _View and Customise Shortcuts_ > _Screenshots_ > _Take a screenshot interactively_ and press `backspace`
+  
+   Go to _Settings_ > _Keyboard_ > _View and Customise Shortcuts_ > _Screenshots_ > _Take a screenshot interactively_ and press `backspace`
 
 2. Add custom binding on <kbd>Prt Sc</kbd>:
+  
+   Go to _Settings_ > _Keyboard_ > _View and Customise Shortcuts_ > _Custom shortcuts_ and press the '+' button at the bottom.
 
-   Ubuntu 18.04: Go to _Settings_ > _Device_ > _Keyboard_ and press the '+' button at the bottom.
-
-   Ubuntu 20.04: Go to _Settings_ > _Keyboard Shortcuts_ and press the '+' button at the bottom.
-
-   Ubuntu 22.04: Go to _Settings_ > _Keyboard_ > _View and Customise Shortcuts_ > _Custom shortcuts_ and press the '+' button at the bottom.
-
-3. Name the command as you like it, e.g. `flameshot`. And in the command insert `/usr/bin/flameshot gui`.
+3. Name the command as you like it, e.g. `flameshot`. And in the command insert `/usr/bin/flameshot gui` or `flatpak run org.flameshot.Flameshot gui` if installed via flatpak.
 
 4. Then click "_Set Shortcut.._" and press <kbd>Prt Sc</kbd>. This will show as "_print_".
 
@@ -306,10 +308,20 @@ Now every time you press <kbd>Prt Sc</kbd>, it will start the Flameshot GUI inst
     ```text
     Command                        Shortcut
     xfce4-screenshooter -fd 1      Print
-    ````
+    ```
 4. Replace `xfce4-screenshooter -fd 1` with `flameshot gui`
 
 Now every time you press <kbd>Prt Sc</kbd> it will start Flameshot GUI instead of the default application.
+
+#### On Fluxbox
+
+1. Edit your `~/.fluxbox/keys` file
+2. Add a new entry. `Print` is the key name, `flameshot gui` is the shell command; for more options see [the fluxbox wiki](https://sillyslux.github.io/fluxbox-wiki/en/wiki/Keyboard-Shortcuts/).
+
+    ```text
+    Print :Exec flameshot gui
+    ```
+3. Refresh Fluxbox configuration with **Reconfigure** option from the menu.
 
 ## Considerations
 
@@ -343,7 +355,7 @@ There are packages available in the repository of some Linux distributions:
   + Snapshot also available via AUR: [flameshot-git](https://aur.archlinux.org/packages/flameshot-git).
 - [Debian 10+](https://tracker.debian.org/pkg/flameshot): `apt install flameshot`
   + Package for Debian 9 ("Stretch") also [available via stretch-backports](https://backports.debian.org/).
-- [Ubuntu 18.04+](https://launchpad.net/ubuntu/+source/flameshot): `apt install flameshot`
+- [Ubuntu](https://launchpad.net/ubuntu/+source/flameshot): `apt install flameshot`
 - [openSUSE](https://software.opensuse.org/package/flameshot): `zypper install flameshot`
 - [Void Linux](https://github.com/void-linux/void-packages/tree/master/srcpkgs/flameshot): `xbps-install flameshot`
 - [Solus](https://dev.getsol.us/source/flameshot/): `eopkg it flameshot`
@@ -365,6 +377,10 @@ follow the steps below:
 1. Go to the Applications folder (Finder > Go > Applications, or <kbd>Shift</kbd>+<kbd>Command</kbd>+<kbd>A</kbd>)
 1. Right-Click on "flameshot.app" and choose "Open" from the context menu
 2. In the dialog click "Open"
+
+On MacOs 15 and above, you will have to go to system settings -> privacy and security after doing this and click "Open Anyway" or you can open flameshot first time with the following command.
+
+```sudo xattr -rd com.apple.quarantine /Applications/flameshot.app```
 
 After following all those steps above, `flameshot` will open without problems in your Mac.
 
@@ -390,7 +406,7 @@ Alternatively, in case you don't want to have a systray, you can always call Fla
 
 To build the application in your system, you'll need to install the dependencies needed for it and package names might be different for each distribution, see [Dependencies](#dependencies) below for more information. You can also install most of the Qt dependencies via [their installer](https://www.qt.io/download-qt-installer). If you were developing Qt apps before, you probably already have them.
 
-This project uses [CMake](https://cmake.org/) build system, so you need to install it in order to build the project (on most Linux distributions it is available in the standard repositories as a package called `cmake`). If your distribution provides too old version of CMake (e.g. Ubuntu 18.04) you can [download it on the official website](https://cmake.org/download/).
+This project uses [CMake](https://cmake.org/) build system, so you need to install it in order to build the project (on most Linux distributions it is available in the standard repositories as a package called `cmake`). If your distribution provides too old version of CMake (e.g. Ubuntu or Debian) you can [download it on the official website](https://cmake.org/download/).
 
 Also you can open and build/debug the project in a C++ IDE. For example, in Qt Creator you should be able to simply open `CMakeLists.txt` via `Open File or Project` in the menu after installing CMake into your system. [More information about CMake projects in Qt Creator](https://doc.qt.io/qtcreator/creator-project-cmake.html).
 
@@ -398,10 +414,10 @@ Also you can open and build/debug the project in a C++ IDE. For example, in Qt C
 
 #### Compile-time
 
-- Qt >= 5.9
+- Qt >= 6.2.4 (available by default on Ubuntu Jammy)
   + Development tools
-- GCC >= 7.4
-- CMake >= 3.13
+- GCC >= 11
+- CMake >= 3.22
 
 #### Run-time
 
@@ -413,98 +429,126 @@ Also you can open and build/debug the project in a C++ IDE. For example, in Qt C
 - Git
 - OpenSSL
 - CA Certificates
+- Qt Image Formats - for additional export image formats (e.g. tiff, webp, and more)
 
 #### Debian
 
 ```shell
 # Compile-time
-apt install g++ cmake build-essential qtbase5-dev qttools5-dev-tools libqt5svg5-dev qttools5-dev
+apt install g++ cmake build-essential qt6-base-dev qt6-tools-dev-tools qt6-svg-dev qt6-tools-dev
 
 # Run-time
-apt install libqt5dbus5 libqt5network5 libqt5core5a libqt5widgets5 libqt5gui5 libqt5svg5
+apt install libkf6guiaddons-dev libqt6dbus6 libqt6network6 libqt6core6 libqt6widgets6 libqt6gui6 libqt6svg6 qt6-qpa-plugins
 
 # Optional
-apt install git openssl ca-certificates
+apt install git openssl ca-certificates qt6-image-formats-plugins
 ```
 
 #### Fedora
 
 ```shell
 # Compile-time
-dnf install gcc-c++ cmake qt5-qtbase-devel qt5-linguist
+dnf install gcc-c++ cmake qt6-qtbase-devel qt6-qtsvg-devel qt6-qttools qt6-linguist qt6-qttools-devel kf6-kguiaddons-devel
 
 # Run-time
-dnf install qt5-qtbase qt5-qtsvg-devel
+dnf install qt6-qtbase qt6-qtsvg kf6-kguiaddons
 
 # Optional
-dnf install git openssl ca-certificates
+dnf install git openssl ca-certificates qt6-qtimageformats
 ```
 
 #### Arch
 
 ```shell
 # Compile-time
-pacman -S cmake base-devel git qt5-base qt5-tools
+pacman -S cmake base-devel git qt6-base qt6-tools kguiaddons
 
 # Run-time
-pacman -S qt5-svg
+pacman -S qt6-svg
 
 # Optional
-pacman -S openssl ca-certificates
+pacman -S openssl ca-certificates qt6-imageformats
 ```
 
-#### NixOS
+#### Nix
+
+Development Shell:
+```shell
+# Without flakes:
+nix-shell
+
+# With flakes:
+nix develop
+```
 
 ```shell
-nix-shell
+# Build flameshot
+nix build
+
+# Build and run flameshot
+nix run
 ```
 
 #### macOS
 
-First of all you need to install [brew](https://brew.sh) and than install the dependencies
+First of all you need to install [brew](https://brew.sh) and then install the dependencies
 ```shell
-brew install qt5
+brew install qt6
 brew install cmake
 ```
 
 ### Build
 
-After installing all the dependencies, finally run the following commands in the sources root directory:
+After installing all the dependencies, Flameshot can be built.
+
+#### Installation/build dir
+For the translations to be loaded correctly, the build process needs to be aware of where you want
+to install Flameshot.
 
 ```shell
-cmake -S . -B build && cmake --build build
+# Directory where build files will be placed, may be relative
+export BUILD_DIR=build
+
+# Directory prefix where Flameshot will be installed. If you are just building and don't want to
+# install, comment this environment variable.
+# This excludes the bin/flameshot part of the install,
+# e.g. in /opt/flameshot/bin/flameshot, the CMAKE_INSTALL_PREFIX is /opt/flameshot
+# This must be an absolute path. Requires CMAKE 3.29.
+export CMAKE_INSTALL_PREFIX=/opt/flameshot
+
+# Linux
+cmake -S . -B "$BUILD_DIR" \
+    && cmake --build "$BUILD_DIR"
+
+#MacOS
+cmake -S . -B "$BUILD_DIR" \
+    -DQt6_DIR="$(brew --prefix qt6)/lib/cmake/Qt6" \
+    && cmake --build "$BUILD_DIR"
 ```
 
-NOTE: For macOS you should replace the command
-
-```shell
-cmake -S . -B build
-```
-
-with
-
-```shell
-cmake -S . -B build -DQt5_DIR=$(brew --prefix qt5)/lib/cmake/Qt5
-```
-
-When the `cmake --build build` command has completed you can launch flameshot from the `project_folder/build/src` folder.
+When the `cmake --build` command has completed you can launch Flameshot from the `project_folder/build/src` folder.
 
 ### Install
 
 Note that if you install from source, there _is no_ uninstaller, so consider installing to a custom directory.
 
 #### To install into a custom directory
+Make sure you are using cmake `>= 3.29` and build Flameshot with `$CMAKE_INSTALL_PREFIX` set to the
+installation directory. If this is not done, the translations won't be found when using a custom directory.
+Then, run the following:
+
 ```bash
-# Best to use an absolute path here
-INST_DIR=/opt/flameshot
+# !Build with CMAKE_INSTALL_PREFIX and use cmake >= 3.29! Using an older cmake will cause
+# installation into the default /usr/local dir.
+
 # You may need to run this with privileges
-cmake --install build --prefix "$INST_DIR"
+cmake --install "$BUILD_DIR"
 ```
 
 #### To install to the default install directory
 ```bash
 # You may need to run this with privileges
-cmake --install build
+cmake --install "$BUILD_DIR"
 ```
 
 ### FAQ

@@ -20,23 +20,23 @@ GlobalShortcutFilter::GlobalShortcutFilter(QObject* parent)
 
 bool GlobalShortcutFilter::nativeEventFilter(const QByteArray& eventType,
                                              void* message,
-                                             long* result)
+                                             qintptr* result)
 {
     Q_UNUSED(eventType)
     Q_UNUSED(result)
 
     MSG* msg = static_cast<MSG*>(message);
     if (msg->message == WM_HOTKEY) {
-        // TODO: this is just a temporal workwrround, proper global
+        // TODO: this is just a temporary workaround; proper global
         // support would need custom shortcuts defined by the user.
         const quint32 keycode = HIWORD(msg->lParam);
         const quint32 modifiers = LOWORD(msg->lParam);
-
+#ifdef ENABLE_IMGUR
         // Show screenshots history
         if (VK_SNAPSHOT == keycode && MOD_SHIFT == modifiers) {
             Flameshot::instance()->history();
         }
-
+#endif
         // Capture screen
         if (VK_SNAPSHOT == keycode && 0 == modifiers) {
             Flameshot::instance()->requestCapture(

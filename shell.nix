@@ -1,11 +1,12 @@
-{ pkgs ? import <nixpkgs> { } }:
-
-pkgs.mkShell {
-  nativeBuildInputs = with pkgs; [
-    cmake
-    qt5.full
-    qt5.qttools
-    qt5.qtsvg
-  ];
-  buildInputs = with pkgs; [ qt5.qtbase libsForQt5.kguiaddons ];
-}
+(import (
+  let
+    lock = builtins.fromJSON (builtins.readFile ./flake.lock);
+    nodeName = lock.nodes.root.inputs.flake-compat;
+  in
+  fetchTarball {
+    url =
+      lock.nodes.${nodeName}.locked.url
+        or "https://github.com/edolstra/flake-compat/archive/${lock.nodes.${nodeName}.locked.rev}.tar.gz";
+    sha256 = lock.nodes.${nodeName}.locked.narHash;
+  }
+) { src = ./.; }).shellNix
