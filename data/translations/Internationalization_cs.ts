@@ -3241,4 +3241,17 @@ Možná budete muset napsat před &apos;#&apos; opačné (obrácené) lomítko, 
         <translation>%1 (%2)</translation>
     </message>
 </context>
+    <context>
+        <name>OcrTool</name>
+        <message>
+            <location filename="../../src/tools/ocr/ocrtool.cpp" line="37"/>
+            <source>OCR Tool</source>
+            <translation type="unfinished"></translation>
+        </message>
+        <message>
+            <location filename="../../src/tools/ocr/ocrtool.cpp" line="47"/>
+            <source>Copy text to clipboard</source>
+            <translation type="unfinished"></translation>
+        </message>
+    </context>
 </TS>

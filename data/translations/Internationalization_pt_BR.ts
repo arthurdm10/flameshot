@@ -3233,4 +3233,17 @@ Você pode ter que invalidar o sinal &apos;#&apos;, por exemplo &apos;\#FFF&apos
         <translation>%1 (%2)</translation>
     </message>
 </context>
+    <context>
+        <name>OcrTool</name>
+        <message>
+            <location filename="../../src/tools/ocr/ocrtool.cpp" line="37"/>
+            <source>OCR Tool</source>
+            <translation type="unfinished"></translation>
+        </message>
+        <message>
+            <location filename="../../src/tools/ocr/ocrtool.cpp" line="47"/>
+            <source>Copy text to clipboard</source>
+            <translation type="unfinished"></translation>
+        </message>
+    </context>
 </TS>
