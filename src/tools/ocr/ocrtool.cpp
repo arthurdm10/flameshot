@@ -2,11 +2,17 @@
 // SPDX-FileCopyrightText: 2017-2019 Alejandro Sirgo Rica & Contributors
 
 #include "ocrtool.h"
-#include <leptonica/allheaders.h>
-#include <tesseract/baseapi.h>
-#include <QPainter>
-#include <QClipboard>
 #include <QApplication>
+#include <QClipboard>
+#include <QPainter>
+#include <leptonica/allheaders.h>
+#include <leptonica/pix_internal.h>
+#include <tesseract/baseapi.h>
+
+#if USE_WAYLAND_CLIPBOARD
+#include <KSystemClipboard>
+#include <QMimeData>
+#endif
 
 #include "abstractlogger.h"
 
@@ -60,7 +66,7 @@ void OcrTool::pressed(CaptureContext& context)
     // Initialize with English language (eng)
     if (api->Init(NULL, "eng")) {
         AbstractLogger::error() << "Could not initialize tesseract.";
-    } 
+    }
     const auto sc = context.selectedScreenshotArea();
     const auto scImg = sc.toImage();
 
@@ -69,24 +75,18 @@ void OcrTool::pressed(CaptureContext& context)
 
     api->SetImage(pix);
     api->SetSourceResolution(90);
-    
+
     const char* detectedText = api->GetUTF8Text();
 
-    if(detectedText == nullptr) {
+    if (detectedText == nullptr) {
         AbstractLogger::error() << "No text was found";
     } else {
         AbstractLogger::info() << "Text copied to clipboard";
         const auto clipboard = QApplication::clipboard();
         clipboard->setText(detectedText, QClipboard::Clipboard);
-        // Pixa* pixa;
-        // const auto boxa = api->GetTextlines(true, true, &pixa, nullptr, nullptr);
-
-        // char info[1024];
-        // sprintf(info, "X: %d Y %d -- W: %d Y: %d", boxa->box[0]->x, boxa->box[0]->y, boxa->box[0]->w, boxa->box[0]->h);
     }
-  
+
     emit requestAction(REQ_CLOSE_GUI);
     api->End();
     return;
-
 }
