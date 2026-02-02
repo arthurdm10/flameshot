@@ -4,6 +4,7 @@
 #include "ocrtool.h"
 #include <QApplication>
 #include <QClipboard>
+#include <QFileInfo>
 #include <QPainter>
 #include <leptonica/allheaders.h>
 #include <leptonica/pix_internal.h>
@@ -15,7 +16,7 @@
 #endif
 
 #include "abstractlogger.h"
-
+#include "confighandler.h"
 OcrTool::OcrTool(QObject* parent)
   : AbstractTwoPointTool(parent)
 {
@@ -63,10 +64,28 @@ void OcrTool::process(QPainter& painter, const QPixmap& pixmap)
 void OcrTool::pressed(CaptureContext& context)
 {
     tesseract::TessBaseAPI* api = new tesseract::TessBaseAPI();
-    // Initialize with English language (eng)
-    if (api->Init(NULL, "eng")) {
-        AbstractLogger::error() << "Could not initialize tesseract.";
+
+    const QString tessDataPath = ConfigHandler().tessDataPath();
+
+    if (tessDataPath.isEmpty()) {
+        AbstractLogger::error()
+          << "Tesseract language data path is not set. Please set it in the settings.";
+        emit requestAction(REQ_CLOSE_GUI);
+        api->End();
+        return;
     }
+
+    const auto fileInfo = QFileInfo(tessDataPath);
+    const auto lang = fileInfo.baseName().toLower().toStdString();
+
+    const auto dataPath = fileInfo.path().toStdString();
+
+    if (api->Init(dataPath.c_str(), lang.c_str()) != 0) {
+        AbstractLogger::error() << "Could not initialize Tesseract.";
+        emit requestAction(REQ_CLOSE_GUI);
+        return;
+    }
+
     const auto sc = context.selectedScreenshotArea();
     const auto scImg = sc.toImage();
 

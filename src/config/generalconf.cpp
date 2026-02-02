@@ -56,6 +56,7 @@ GeneralConf::GeneralConf(QWidget* parent)
     initAntialiasingPinZoom();
     initUndoLimit();
     initInsecurePixelate();
+    initTessDataPath();
 #ifdef ENABLE_IMGUR
     initCopyAndCloseAfterUpload();
     initUploadWithoutConfirmation();
@@ -231,6 +232,23 @@ void GeneralConf::exportFileConfiguration()
     if (!ok) {
         QMessageBox::about(this, tr("Error"), tr("Unable to write file."));
     }
+}
+
+void GeneralConf::setTessDataPath()
+{
+    QString fileName =
+      QFileDialog::getOpenFileName(this, tr("Import Tessdata"));
+    if (fileName.isEmpty()) {
+        return;
+    }
+    QFile file(fileName);
+    if (!file.open(QFile::ReadOnly)) {
+        QMessageBox::about(this, tr("Error"), tr("Unable to read file."));
+        return;
+    }
+    file.close();
+    ConfigHandler().setTessDataPath(fileName);
+    m_tessDataPath->setText(fileName);
 }
 
 void GeneralConf::resetConfiguration()
@@ -670,6 +688,30 @@ void GeneralConf::initUndoLimit()
             &GeneralConf::undoLimit);
 
     vboxLayout->addWidget(m_undoLimit);
+}
+
+void GeneralConf::initTessDataPath()
+{
+    auto* box = new QGroupBox(tr("Tesseract Language Data Path"));
+    box->setFlat(true);
+    m_layout->addWidget(box);
+
+    auto* hboxLayout = new QHBoxLayout();
+    box->setLayout(hboxLayout);
+
+    m_tessDataPath = new QLineEdit(this);
+    QString foreground = this->palette().windowText().color().name();
+    m_tessDataPath->setStyleSheet(QStringLiteral("color: %1").arg(foreground));
+    m_tessDataPath->setText(ConfigHandler().tessDataPath());
+    m_tessDataPath->setDisabled(true);
+    hboxLayout->addWidget(m_tessDataPath);
+
+    m_changeTessDataPathButton = new QPushButton(tr("Change..."), this);
+    hboxLayout->addWidget(m_changeTessDataPathButton);
+    connect(m_changeTessDataPathButton,
+            &QPushButton::clicked,
+            this,
+            &GeneralConf::setTessDataPath);
 }
 
 void GeneralConf::undoLimit(int limit)
