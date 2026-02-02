@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "src/tools/abstracttwopointtool.h"
+#include "src/tools/abstractactiontool.h"
 
-class OcrTool : public AbstractTwoPointTool
+class OcrTool : public AbstractActionTool
 {
     Q_OBJECT
 public:
@@ -18,7 +18,6 @@ public:
     QString description() const override;
 
     CaptureTool* copy(QObject* parent = nullptr) override;
-    void process(QPainter& painter, const QPixmap& pixmap) override;
 
 protected:
     CaptureTool::Type type() const override;

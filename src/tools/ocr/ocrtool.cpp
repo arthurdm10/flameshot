@@ -6,8 +6,7 @@
 #include <QClipboard>
 #include <QFileInfo>
 #include <QPainter>
-#include <leptonica/allheaders.h>
-#include <leptonica/pix_internal.h>
+#include <memory>
 #include <tesseract/baseapi.h>
 
 #if USE_WAYLAND_CLIPBOARD
@@ -17,10 +16,10 @@
 
 #include "abstractlogger.h"
 #include "confighandler.h"
+
 OcrTool::OcrTool(QObject* parent)
-  : AbstractTwoPointTool(parent)
+  : AbstractActionTool(parent)
 {
-    m_supportsDiagonalAdj = true;
 }
 
 bool OcrTool::closeOnButtonPressed() const
@@ -33,6 +32,7 @@ QIcon OcrTool::icon(const QColor& background, bool inEditor) const
     Q_UNUSED(inEditor)
     return QIcon(iconPath(background) + "ocr.svg");
 }
+
 QString OcrTool::name() const
 {
     return tr("OCR Tool");
@@ -55,23 +55,16 @@ CaptureTool* OcrTool::copy(QObject* parent)
     return tool;
 }
 
-void OcrTool::process(QPainter& painter, const QPixmap& pixmap)
-{
-    Q_UNUSED(pixmap);
-    Q_UNUSED(painter);
-}
-
 void OcrTool::pressed(CaptureContext& context)
 {
-    tesseract::TessBaseAPI* api = new tesseract::TessBaseAPI();
+    auto api = std::make_unique<tesseract::TessBaseAPI>();
 
     const QString tessDataPath = ConfigHandler().tessDataPath();
 
     if (tessDataPath.isEmpty()) {
         AbstractLogger::error()
-          << "Tesseract language data path is not set. Please set it in the settings.";
+          << "Tesseract data path is not set. Please set it in the settings.";
         emit requestAction(REQ_CLOSE_GUI);
-        api->End();
         return;
     }
 
@@ -86,26 +79,38 @@ void OcrTool::pressed(CaptureContext& context)
         return;
     }
 
-    const auto sc = context.selectedScreenshotArea();
-    const auto scImg = sc.toImage();
+    QImage image = context.selectedScreenshotArea().toImage();
+    if (image.isNull()) {
+        AbstractLogger::error() << "Failed to get image from selection.";
+        emit requestAction(REQ_CLOSE_GUI);
+        return;
+    }
 
-    Pix* pix = pixCreate(scImg.width(), scImg.height(), scImg.depth());
-    pix->data = (l_uint32*)scImg.bits();
+    image = image.convertToFormat(QImage::Format_RGB888);
 
-    api->SetImage(pix);
+    api->SetImage(image.bits(),
+                  image.width(),
+                  image.height(),
+                  3,
+                  image.bytesPerLine());
     api->SetSourceResolution(90);
 
-    const char* detectedText = api->GetUTF8Text();
+    char* detectedText = api->GetUTF8Text();
 
     if (detectedText == nullptr) {
         AbstractLogger::error() << "No text was found";
     } else {
-        AbstractLogger::info() << "Text copied to clipboard";
-        const auto clipboard = QApplication::clipboard();
-        clipboard->setText(detectedText, QClipboard::Clipboard);
+        QString text = QString::fromUtf8(detectedText);
+        delete[] detectedText;
+
+        if (text.trimmed().isEmpty()) {
+            AbstractLogger::info() << "OCR Result is empty.";
+        } else {
+            AbstractLogger::info() << "Text copied to clipboard";
+            const auto clipboard = QApplication::clipboard();
+            clipboard->setText(text, QClipboard::Clipboard);
+        }
     }
 
     emit requestAction(REQ_CLOSE_GUI);
-    api->End();
-    return;
 }

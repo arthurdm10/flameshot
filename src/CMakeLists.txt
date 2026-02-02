@@ -20,6 +20,7 @@ find_package(
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 find_package(Tesseract REQUIRED)
 find_package(Leptonica REQUIRED)
+message(STATUS "Tesseract Libraries: ${Tesseract_LIBRARIES}")
 endif()
 
 if (USE_WAYLAND_CLIPBOARD)
@@ -194,6 +195,9 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tools/exit>
         if(ENABLE_IMGUR)
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tools/imgur>
+        endif()
+        if(ENABLE_TESSERACT)
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tools/ocrtool>
         endif()
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tools/launcher>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tools/line>
