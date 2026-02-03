@@ -31,7 +31,7 @@ jobs:
       VCINSTALLDIR: C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC
       # 2025.02.14
       VCPKG_VERSION: d5ec528843d29e3a52d745a64b469f810b2cedbf
-      VCPKG_PACKAGES: openssl-windows
+      VCPKG_PACKAGES: openssl-windows tesseract leptonica
       OPENSSL_ROOT_DIR: ${{ github.workspace }}\vcpkg\installed\${{ matrix.config.vcpkg_triplet }}\
     strategy:
       fail-fast: false
@@ -118,6 +118,7 @@ jobs:
           cmake ..  ${{matrix.config.generator}}  `
           -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"  `
           -DENABLE_OPENSSL=ON `
+          -DENABLE_OCR=ON `
           -DCMAKE_BUILD_TYPE=Release  `
           -DRUN_IN_PLACE=${{ contains(matrix.type, 'portable') }}
 

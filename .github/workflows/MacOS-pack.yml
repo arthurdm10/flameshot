@@ -75,12 +75,12 @@ jobs:
           echo "GIT_HASH=${git_hash}" >> $GITHUB_ENV
 
       - name: Install Qt
-        run: brew install qt@6
+        run: brew install qt@6 tesseract leptonica
 
       - name: Configure
         run: |
           rm -rf "${DIR_BUILD}"/src/flameshot.dmg "${DIR_BUILD}"/src/flameshot.app/
-          cmake -GNinja -S . -B "${DIR_BUILD}" -DQt6_DIR=$(brew --prefix qt6)/lib/cmake/Qt6 -DUSE_MONOCHROME_ICON=True
+          cmake -GNinja -S . -B "${DIR_BUILD}" -DQt6_DIR=$(brew --prefix qt6)/lib/cmake/Qt6 -DUSE_MONOCHROME_ICON=True -DENABLE_OCR=ON
 
       - name: Compile
         run: |

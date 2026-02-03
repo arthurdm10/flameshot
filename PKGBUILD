@@ -6,7 +6,7 @@ pkgdesc="Powerful yet simple to use screenshot software"
 arch=('i686' 'x86_64' 'aarch64' 'armv7h')
 url="https://github.com/flameshot-org/flameshot"
 license=('GPL-3.0-or-later')
-depends=('qt6-base' 'qt6-svg' 'hicolor-icon-theme' 'kguiaddons')
+depends=('qt6-base' 'qt6-svg' 'hicolor-icon-theme' 'kguiaddons' 'tesseract' 'leptonica')
 makedepends=('qt6-tools' 'cmake' 'ninja')
 optdepends=(
     'gnome-shell-extension-appindicator: for system tray icon if you are using Gnome'
@@ -36,6 +36,7 @@ build() {
         -DCMAKE_INSTALL_PREFIX=/usr \
         -DUSE_WAYLAND_CLIPBOARD=1 \
         -DDISABLE_UPDATE_CHECKER=1 \
+        -DENABLE_OCR=ON
 
     cmake --build build
 }
