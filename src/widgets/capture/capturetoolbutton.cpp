@@ -162,7 +162,9 @@ static std::map<CaptureTool::Type, int> buttonTypeOrder{
 
     { CaptureTool::TYPE_SIZEINCREASE, 22 },
     { CaptureTool::TYPE_SIZEDECREASE, 23 },
+#ifdef ENABLE_OCR
     { CaptureTool::TYPE_OCR, 24 },
+#endif
 };
 
 int CaptureToolButton::getPriorityByButton(CaptureTool::Type b)
@@ -181,7 +183,10 @@ QList<CaptureTool::Type> CaptureToolButton::iterableButtonTypes = {
     CaptureTool::TYPE_INVERT,        CaptureTool::TYPE_MOVESELECTION,
     CaptureTool::TYPE_UNDO,          CaptureTool::TYPE_REDO,
     CaptureTool::TYPE_COPY,          CaptureTool::TYPE_SAVE,
-    CaptureTool::TYPE_EXIT,          CaptureTool::TYPE_OCR,
+    CaptureTool::TYPE_EXIT,
+#ifdef ENABLE_OCR
+    CaptureTool::TYPE_OCR,
+#endif
 #ifdef ENABLE_IMGUR
     CaptureTool::TYPE_IMAGEUPLOADER,
 #endif
