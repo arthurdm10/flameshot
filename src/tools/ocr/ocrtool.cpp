@@ -19,8 +19,7 @@
 
 OcrTool::OcrTool(QObject* parent)
   : AbstractActionTool(parent)
-{
-}
+{}
 
 bool OcrTool::closeOnButtonPressed() const
 {
@@ -88,11 +87,8 @@ void OcrTool::pressed(CaptureContext& context)
 
     image = image.convertToFormat(QImage::Format_RGB888);
 
-    api->SetImage(image.bits(),
-                  image.width(),
-                  image.height(),
-                  3,
-                  image.bytesPerLine());
+    api->SetImage(
+      image.bits(), image.width(), image.height(), 3, image.bytesPerLine());
     api->SetSourceResolution(90);
 
     char* detectedText = api->GetUTF8Text();
