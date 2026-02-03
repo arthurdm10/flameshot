@@ -1,44 +1,59 @@
 # FindLeptonica.cmake
 #
 # Finds the Leptonica library.
-#
-# This will define:
-# Leptonica_FOUND        - True if Leptonica was found
-# Leptonica_INCLUDE_DIRS - The Leptonica include directories
-# Leptonica_LIBRARIES    - The Leptonica libraries
 
-find_package(PkgConfig QUIET)
-if(PKG_CONFIG_FOUND)
-    pkg_check_modules(PC_LEPTONICA QUIET lept leptonica)
+# 1. Try to find via CONFIG
+find_package(leptonica CONFIG QUIET)
+if(leptonica_FOUND)
+    if(NOT TARGET Leptonica::Leptonica)
+        if(TARGET leptonica)
+            add_library(Leptonica::Leptonica INTERFACE IMPORTED)
+            set_target_properties(Leptonica::Leptonica PROPERTIES
+                INTERFACE_LINK_LIBRARIES leptonica
+            )
+        endif()
+    endif()
+    set(Leptonica_FOUND TRUE)
+    if(TARGET leptonica)
+        get_target_property(Leptonica_INCLUDE_DIRS leptonica INTERFACE_INCLUDE_DIRECTORIES)
+        set(Leptonica_LIBRARIES leptonica)
+    endif()
 endif()
 
-find_path(Leptonica_INCLUDE_DIR
-    NAMES leptonica/allheaders.h
-    HINTS ${PC_LEPTONICA_INCLUDE_DIRS}
-    PATHS /usr/include /usr/local/include
-)
+if(NOT Leptonica_FOUND)
+    find_package(PkgConfig QUIET)
+    if(PKG_CONFIG_FOUND)
+        pkg_check_modules(PC_LEPTONICA QUIET lept leptonica)
+    endif()
 
-find_library(Leptonica_LIBRARY
-    NAMES lept leptonica
-    HINTS ${PC_LEPTONICA_LIBRARY_DIRS}
-    PATHS /usr/lib /usr/local/lib
-)
+    find_path(Leptonica_INCLUDE_DIR
+        NAMES leptonica/allheaders.h
+        HINTS ${PC_LEPTONICA_INCLUDE_DIRS}
+        PATHS /usr/include /usr/local/include
+    )
 
-if (Leptonica_INCLUDE_DIR AND Leptonica_LIBRARY)
-    set(Leptonica_FOUND TRUE)
-    set(Leptonica_LIBRARIES ${Leptonica_LIBRARY})
-    set(Leptonica_INCLUDE_DIRS ${Leptonica_INCLUDE_DIR})
+    find_library(Leptonica_LIBRARY
+        NAMES lept leptonica libleptonica leptonica-1.85.0 leptonica-1.84.1 leptonica-1.84.0 leptonica-1.83.0 leptonica-1.82.0
+        HINTS ${PC_LEPTONICA_LIBRARY_DIRS}
+        PATHS /usr/lib /usr/local/lib
+    )
 
-    if(NOT TARGET Leptonica::Leptonica)
-        add_library(Leptonica::Leptonica UNKNOWN IMPORTED)
-        set_target_properties(Leptonica::Leptonica PROPERTIES
-            INTERFACE_INCLUDE_DIRECTORIES "${Leptonica_INCLUDE_DIRS}"
-            IMPORTED_LOCATION "${Leptonica_LIBRARIES}"
-        )
+    if (Leptonica_INCLUDE_DIR AND Leptonica_LIBRARY)
+        set(Leptonica_FOUND TRUE)
+        set(Leptonica_LIBRARIES ${Leptonica_LIBRARY})
+        set(Leptonica_INCLUDE_DIRS ${Leptonica_INCLUDE_DIR})
+
+        if(NOT TARGET Leptonica::Leptonica)
+            add_library(Leptonica::Leptonica UNKNOWN IMPORTED)
+            set_target_properties(Leptonica::Leptonica PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${Leptonica_INCLUDE_DIRS}"
+                IMPORTED_LOCATION "${Leptonica_LIBRARIES}"
+            )
+        endif()
     endif()
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Leptonica DEFAULT_MSG Leptonica_LIBRARY Leptonica_INCLUDE_DIR)
+find_package_handle_standard_args(Leptonica DEFAULT_MSG Leptonica_LIBRARIES Leptonica_INCLUDE_DIRS)
 
 mark_as_advanced(Leptonica_INCLUDE_DIR Leptonica_LIBRARY)
