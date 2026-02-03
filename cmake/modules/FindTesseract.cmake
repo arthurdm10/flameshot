@@ -3,25 +3,41 @@
 # Finds the Tesseract OCR library.
 
 # 1. Try to find via CONFIG (vcpkg and modern installs)
-find_package(tesseract CONFIG QUIET)
-if(tesseract_FOUND)
-    if(NOT TARGET Tesseract::Tesseract)
-        if(TARGET libtesseract)
+find_package(Tesseract CONFIG QUIET)
+if(NOT Tesseract_FOUND)
+    find_package(tesseract CONFIG QUIET)
+endif()
+
+if(Tesseract_FOUND OR tesseract_FOUND)
+    set(Tesseract_FOUND TRUE)
+    
+    # Try to find the best available target
+    if(TARGET Tesseract::libtesseract)
+        set(TESS_TARGET Tesseract::libtesseract)
+    elseif(TARGET tesseract::libtesseract)
+        set(TESS_TARGET tesseract::libtesseract)
+    elseif(TARGET libtesseract)
+        set(TESS_TARGET libtesseract)
+    endif()
+
+    if(TESS_TARGET)
+        if(NOT TARGET Tesseract::Tesseract)
             add_library(Tesseract::Tesseract INTERFACE IMPORTED)
             set_target_properties(Tesseract::Tesseract PROPERTIES
-                INTERFACE_LINK_LIBRARIES libtesseract
+                INTERFACE_LINK_LIBRARIES ${TESS_TARGET}
             )
         endif()
-    endif()
-    set(Tesseract_FOUND TRUE)
-    # We still want to set these for the rest of the build system
-    if(TARGET libtesseract)
-        get_target_property(Tesseract_INCLUDE_DIRS libtesseract INTERFACE_INCLUDE_DIRECTORIES)
-        set(Tesseract_LIBRARIES libtesseract)
+        
+        get_target_property(TESS_INC ${TESS_TARGET} INTERFACE_INCLUDE_DIRECTORIES)
+        if(TESS_INC)
+            set(Tesseract_INCLUDE_DIRS ${TESS_INC})
+        endif()
+        set(Tesseract_LIBRARIES ${TESS_TARGET})
     endif()
 endif()
 
-if(NOT Tesseract_FOUND)
+# 2. Fallback to manual search if CONFIG failed or didn't provide enough info
+if(NOT Tesseract_INCLUDE_DIRS OR NOT Tesseract_LIBRARIES)
     find_package(PkgConfig QUIET)
     if(PKG_CONFIG_FOUND)
         pkg_check_modules(PC_TESSERACT QUIET tesseract)

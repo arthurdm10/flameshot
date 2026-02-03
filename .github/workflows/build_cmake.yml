@@ -90,7 +90,7 @@ jobs:
     runs-on: ${{ matrix.config.os }}
     env:
       VCPKG_VERSION: d5ec528843d29e3a52d745a64b469f810b2cedbf
-      VCPKG_PACKAGES: openssl tesseract leptonica
+      VCPKG_PACKAGES: openssl:x64-windows tesseract:x64-windows leptonica:x64-windows
     strategy:
       fail-fast: false
       matrix:
@@ -121,6 +121,11 @@ jobs:
           appendedCacheKey: ${{ matrix.config.vcpkg_triplet }}
           vcpkgGitCommitId: ${{ env.VCPKG_VERSION }}
           vcpkgTriplet: ${{ matrix.config.vcpkg_triplet }}
+
+      - name: Verify vcpkg installation
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}\vcpkg\vcpkg.exe" list
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4

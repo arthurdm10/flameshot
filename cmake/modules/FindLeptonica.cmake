@@ -3,24 +3,40 @@
 # Finds the Leptonica library.
 
 # 1. Try to find via CONFIG
-find_package(leptonica CONFIG QUIET)
-if(leptonica_FOUND)
-    if(NOT TARGET Leptonica::Leptonica)
-        if(TARGET leptonica)
+find_package(Leptonica CONFIG QUIET)
+if(NOT Leptonica_FOUND)
+    find_package(leptonica CONFIG QUIET)
+endif()
+
+if(Leptonica_FOUND OR leptonica_FOUND)
+    set(Leptonica_FOUND TRUE)
+    
+    if(TARGET Leptonica::leptonica)
+        set(LEPT_TARGET Leptonica::leptonica)
+    elseif(TARGET leptonica::leptonica)
+        set(LEPT_TARGET leptonica::leptonica)
+    elseif(TARGET leptonica)
+        set(LEPT_TARGET leptonica)
+    endif()
+
+    if(LEPT_TARGET)
+        if(NOT TARGET Leptonica::Leptonica)
             add_library(Leptonica::Leptonica INTERFACE IMPORTED)
             set_target_properties(Leptonica::Leptonica PROPERTIES
-                INTERFACE_LINK_LIBRARIES leptonica
+                INTERFACE_LINK_LIBRARIES ${LEPT_TARGET}
             )
         endif()
-    endif()
-    set(Leptonica_FOUND TRUE)
-    if(TARGET leptonica)
-        get_target_property(Leptonica_INCLUDE_DIRS leptonica INTERFACE_INCLUDE_DIRECTORIES)
-        set(Leptonica_LIBRARIES leptonica)
+        
+        get_target_property(LEPT_INC ${LEPT_TARGET} INTERFACE_INCLUDE_DIRECTORIES)
+        if(LEPT_INC)
+            set(Leptonica_INCLUDE_DIRS ${LEPT_INC})
+        endif()
+        set(Leptonica_LIBRARIES ${LEPT_TARGET})
     endif()
 endif()
 
-if(NOT Leptonica_FOUND)
+# 2. Fallback
+if(NOT Leptonica_INCLUDE_DIRS OR NOT Leptonica_LIBRARIES)
     find_package(PkgConfig QUIET)
     if(PKG_CONFIG_FOUND)
         pkg_check_modules(PC_LEPTONICA QUIET lept leptonica)
