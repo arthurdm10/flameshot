@@ -31,7 +31,7 @@ jobs:
       VCINSTALLDIR: C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC
       # 2025.02.14
       VCPKG_VERSION: d5ec528843d29e3a52d745a64b469f810b2cedbf
-      VCPKG_PACKAGES: openssl:x64-windows tesseract:x64-windows leptonica:x64-windows
+      VCPKG_PACKAGES: openssl tesseract leptonica
       OPENSSL_ROOT_DIR: ${{ github.workspace }}\vcpkg\installed\${{ matrix.config.vcpkg_triplet }}\
     strategy:
       fail-fast: false
@@ -94,7 +94,7 @@ jobs:
       - name: Restore from cache and run vcpkg
         uses: lukka/run-vcpkg@v11
         with:
-          vcpkgArguments: ${{env.VCPKG_PACKAGES}}
+          vcpkgArguments: install ${{env.VCPKG_PACKAGES}}
           vcpkgDirectory: '${{ github.workspace }}\vcpkg'
           appendedCacheKey: ${{ matrix.config.vcpkg_triplet }}
           vcpkgGitCommitId: ${{ env.VCPKG_VERSION }}
