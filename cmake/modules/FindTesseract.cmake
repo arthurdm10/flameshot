@@ -1,44 +1,60 @@
 # FindTesseract.cmake
 #
 # Finds the Tesseract OCR library.
-#
-# This will define:
-# Tesseract_FOUND        - True if Tesseract was found
-# Tesseract_INCLUDE_DIRS - The Tesseract include directories
-# Tesseract_LIBRARIES    - The Tesseract libraries
 
-find_package(PkgConfig QUIET)
-if(PKG_CONFIG_FOUND)
-    pkg_check_modules(PC_TESSERACT QUIET tesseract)
+# 1. Try to find via CONFIG (vcpkg and modern installs)
+find_package(tesseract CONFIG QUIET)
+if(tesseract_FOUND)
+    if(NOT TARGET Tesseract::Tesseract)
+        if(TARGET libtesseract)
+            add_library(Tesseract::Tesseract INTERFACE IMPORTED)
+            set_target_properties(Tesseract::Tesseract PROPERTIES
+                INTERFACE_LINK_LIBRARIES libtesseract
+            )
+        endif()
+    endif()
+    set(Tesseract_FOUND TRUE)
+    # We still want to set these for the rest of the build system
+    if(TARGET libtesseract)
+        get_target_property(Tesseract_INCLUDE_DIRS libtesseract INTERFACE_INCLUDE_DIRECTORIES)
+        set(Tesseract_LIBRARIES libtesseract)
+    endif()
 endif()
 
-find_path(Tesseract_INCLUDE_DIR
-    NAMES tesseract/baseapi.h
-    HINTS ${PC_TESSERACT_INCLUDE_DIRS}
-    PATHS /usr/include /usr/local/include
-)
+if(NOT Tesseract_FOUND)
+    find_package(PkgConfig QUIET)
+    if(PKG_CONFIG_FOUND)
+        pkg_check_modules(PC_TESSERACT QUIET tesseract)
+    endif()
 
-find_library(Tesseract_LIBRARY
-    NAMES tesseract
-    HINTS ${PC_TESSERACT_LIBRARY_DIRS}
-    PATHS /usr/lib /usr/local/lib
-)
+    find_path(Tesseract_INCLUDE_DIR
+        NAMES tesseract/baseapi.h
+        HINTS ${PC_TESSERACT_INCLUDE_DIRS}
+        PATHS /usr/include /usr/local/include
+    )
 
-if (Tesseract_INCLUDE_DIR AND Tesseract_LIBRARY)
-    set(Tesseract_FOUND TRUE)
-    set(Tesseract_LIBRARIES ${Tesseract_LIBRARY})
-    set(Tesseract_INCLUDE_DIRS ${Tesseract_INCLUDE_DIR})
-    
-    if(NOT TARGET Tesseract::Tesseract)
-        add_library(Tesseract::Tesseract UNKNOWN IMPORTED)
-        set_target_properties(Tesseract::Tesseract PROPERTIES
-            INTERFACE_INCLUDE_DIRECTORIES "${Tesseract_INCLUDE_DIRS}"
-            IMPORTED_LOCATION "${Tesseract_LIBRARIES}"
-        )
+    find_library(Tesseract_LIBRARY
+        NAMES tesseract libtesseract tesseract55 tesseract54 tesseract53 tesseract52 tesseract51 tesseract50
+        HINTS ${PC_TESSERACT_LIBRARY_DIRS}
+        PATHS /usr/lib /usr/local/lib
+    )
+
+    if (Tesseract_INCLUDE_DIR AND Tesseract_LIBRARY)
+        set(Tesseract_FOUND TRUE)
+        set(Tesseract_LIBRARIES ${Tesseract_LIBRARY})
+        set(Tesseract_INCLUDE_DIRS ${Tesseract_INCLUDE_DIR})
+        
+        if(NOT TARGET Tesseract::Tesseract)
+            add_library(Tesseract::Tesseract UNKNOWN IMPORTED)
+            set_target_properties(Tesseract::Tesseract PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${Tesseract_INCLUDE_DIRS}"
+                IMPORTED_LOCATION "${Tesseract_LIBRARIES}"
+            )
+        endif()
     endif()
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Tesseract DEFAULT_MSG Tesseract_LIBRARY Tesseract_INCLUDE_DIR)
+find_package_handle_standard_args(Tesseract DEFAULT_MSG Tesseract_LIBRARIES Tesseract_INCLUDE_DIRS)
 
 mark_as_advanced(Tesseract_INCLUDE_DIR Tesseract_LIBRARY)
