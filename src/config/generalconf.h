@@ -62,6 +62,7 @@ private slots:
     void setJpegQuality(int v);
     void setReverseArrow(bool checked);
     void setInsecurePixelate(bool checked);
+    void setTessDataPath();
 
 private:
     const QString chooseFolder(const QString& currentPath = "");
@@ -101,6 +102,7 @@ private:
     void initJpegQuality();
     void initReverseArrow();
     void initInsecurePixelate();
+    void initTessDataPath();
 
     void _updateComponents(bool allowEmptySavePath);
 
@@ -130,9 +132,11 @@ private:
     QPushButton* m_importButton;
     QPushButton* m_exportButton;
     QPushButton* m_resetButton;
+    QPushButton* m_changeTessDataPathButton;
     QCheckBox* m_saveAfterCopy;
     QLineEdit* m_savePath;
     QLineEdit* m_uploadClientKey;
+    QLineEdit* m_tessDataPath;
     QPushButton* m_changeSaveButton;
     QCheckBox* m_screenshotPathFixedCheck;
     QCheckBox* m_historyConfirmationToDelete;

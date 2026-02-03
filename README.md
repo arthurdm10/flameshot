@@ -418,6 +418,8 @@ Also you can open and build/debug the project in a C++ IDE. For example, in Qt C
   + Development tools
 - GCC >= 11
 - CMake >= 3.22
+- Tesseract
+- Leptonica
 
 #### Run-time
 
@@ -435,7 +437,7 @@ Also you can open and build/debug the project in a C++ IDE. For example, in Qt C
 
 ```shell
 # Compile-time
-apt install g++ cmake build-essential qt6-base-dev qt6-tools-dev-tools qt6-svg-dev qt6-tools-dev
+apt install g++ cmake build-essential qt6-base-dev qt6-tools-dev-tools qt6-svg-dev qt6-tools-dev libtesseract-dev libleptonica-dev
 
 # Run-time
 apt install libkf6guiaddons-dev libqt6dbus6 libqt6network6 libqt6core6 libqt6widgets6 libqt6gui6 libqt6svg6 qt6-qpa-plugins
@@ -448,7 +450,7 @@ apt install git openssl ca-certificates qt6-image-formats-plugins
 
 ```shell
 # Compile-time
-dnf install gcc-c++ cmake qt6-qtbase-devel qt6-qtsvg-devel qt6-qttools qt6-linguist qt6-qttools-devel kf6-kguiaddons-devel
+dnf install gcc-c++ cmake qt6-qtbase-devel qt6-qtsvg-devel qt6-qttools qt6-linguist qt6-qttools-devel kf6-kguiaddons-devel tesseract-devel leptonica-devel
 
 # Run-time
 dnf install qt6-qtbase qt6-qtsvg kf6-kguiaddons
@@ -461,7 +463,7 @@ dnf install git openssl ca-certificates qt6-qtimageformats
 
 ```shell
 # Compile-time
-pacman -S cmake base-devel git qt6-base qt6-tools kguiaddons
+pacman -S cmake base-devel git qt6-base qt6-tools kguiaddons tesseract leptonica
 
 # Run-time
 pacman -S qt6-svg
@@ -495,6 +497,8 @@ First of all you need to install [brew](https://brew.sh) and then install the de
 ```shell
 brew install qt6
 brew install cmake
+brew install tesseract
+brew install leptonica
 ```
 
 ### Build

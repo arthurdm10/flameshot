@@ -16,6 +16,8 @@ BuildRequires: fdupes
 BuildRequires: libappstream-glib
 BuildRequires: ninja-build
 BuildRequires: desktop-file-utils
+BuildRequires: tesseract-devel
+BuildRequires: leptonica-devel
 
 BuildRequires: cmake(Qt6Core) >= 6.2.4
 BuildRequires: cmake(KF6GuiAddons) >= 6.7.0
@@ -55,6 +57,7 @@ Features:
 %cmake -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
     -DUSE_WAYLAND_CLIPBOARD:BOOL=ON \
+    -DENABLE_OCR:BOOL=ON \
     -DBUILD_SHARED_LIBS:BOOL=OFF
 %cmake_build
 

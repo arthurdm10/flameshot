@@ -16,8 +16,15 @@ find_package(
         CONFIG
         REQUIRED
         DBus
-)
+        LinguistTools)
 endif()
+
+if(ENABLE_OCR)
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+    find_package(Tesseract REQUIRED)
+    find_package(Leptonica REQUIRED)
+endif()
+
 
 if (USE_WAYLAND_CLIPBOARD)
     find_package(KF6GuiAddons)
@@ -192,6 +199,9 @@ target_include_directories(
         if(ENABLE_IMGUR)
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tools/imgur>
         endif()
+        if(ENABLE_TESSERACT)
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tools/ocrtool>
+        endif()
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tools/launcher>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tools/line>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tools/marker>
@@ -219,6 +229,21 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/>
          )
 
+
+if (USE_EXTERNAL_SINGLEAPPLICATION)
+    add_compile_definitions(USE_EXTERNAL_SINGLEAPPLICATION=1)
+else ()
+    target_include_directories(
+        flameshot
+        PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../external/singleapplication>)
+endif()
+
+if(ENABLE_OCR)
+    include_directories(${Tesseract_INCLUDE_DIRS})
+    include_directories(${Leptonica_INCLUDE_DIRS})
+endif()
+
 target_link_libraries(
         flameshot
         project_warnings
@@ -228,6 +253,14 @@ target_link_libraries(
         Qt${QT_VERSION_MAJOR}::Widgets
         QtColorWidgets
 )
+
+if(ENABLE_OCR)
+    target_link_libraries(
+            flameshot
+            ${Tesseract_LIBRARIES}
+            ${Leptonica_LIBRARIES}
+    )
+endif()
 if (UNIX)
 target_link_libraries(
         flameshot
@@ -471,6 +504,31 @@ if (WIN32)
             else ()
                 message(WARNING "Unable to find OpenSSL dlls.")
             endif ()
+        endif ()
+
+        if (ENABLE_OCR)
+            # Deploy Tesseract and Leptonica DLLs
+            # We try to find the DLLs in the same directory as the libraries
+            get_filename_component(TESS_LIB_DIR "${Tesseract_LIBRARY}" DIRECTORY)
+            get_filename_component(TESS_BIN_DIR "${TESS_LIB_DIR}/../bin" ABSOLUTE)
+            
+            get_filename_component(LEPT_LIB_DIR "${Leptonica_LIBRARY}" DIRECTORY)
+            get_filename_component(LEPT_BIN_DIR "${LEPT_LIB_DIR}/../bin" ABSOLUTE)
+
+            file(GLOB TESS_DLLS "${TESS_BIN_DIR}/tesseract*.dll")
+            file(GLOB LEPT_DLLS "${LEPT_BIN_DIR}/lept*.dll")
+
+            if (TESS_DLLS)
+                install(FILES ${TESS_DLLS} DESTINATION bin)
+            else()
+                 message(WARNING "Unable to find Tesseract DLLs.")
+            endif()
+
+            if (LEPT_DLLS)
+                install(FILES ${LEPT_DLLS} DESTINATION bin)
+            else()
+                 message(WARNING "Unable to find Leptonica DLLs.")
+            endif()
         endif ()
 
     else ()

@@ -3166,4 +3166,17 @@ Sinun on ehkä vältettävä &quot;#&quot; merkkiä kuten &quot;\#FFF&quot;</tra
         <translation>%1 (%2)</translation>
     </message>
 </context>
+    <context>
+        <name>OcrTool</name>
+        <message>
+            <location filename="../../src/tools/ocr/ocrtool.cpp" line="37"/>
+            <source>OCR Tool</source>
+            <translation type="unfinished"></translation>
+        </message>
+        <message>
+            <location filename="../../src/tools/ocr/ocrtool.cpp" line="47"/>
+            <source>Copy text to clipboard</source>
+            <translation type="unfinished"></translation>
+        </message>
+    </context>
 </TS>
