@@ -418,13 +418,14 @@ Also you can open and build/debug the project in a C++ IDE. For example, in Qt C
   + Development tools
 - GCC >= 11
 - CMake >= 3.22
-- Tesseract
-- Leptonica
+
 
 #### Run-time
 
 - Qt
   + SVG
+- Tesseract
+- Leptonica
 
 #### Optional
 
